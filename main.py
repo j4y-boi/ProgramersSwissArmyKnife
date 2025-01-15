@@ -1,0 +1,244 @@
+# Programmer's Swiss Army Knife
+# Made by j4y_boi
+# https://github.com/j4y-boi
+
+import customtkinter as ctk
+from tkinter import filedialog
+import base64
+import uuid
+
+ctk.set_appearance_mode("System")  # incase someone uses light mode (waht is wrong with u)
+ctk.set_default_color_theme("blue")
+
+optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID"] #guess whos too lazy to edit multiple things (couldnt be me :P)
+optionChosen = 0
+
+def b64encode(string: str):
+    return base64.b64encode(string.encode("ascii")).decode("ascii")
+
+def b64decode(string: str): #wowoowowowo b64????
+    try:
+        return base64.b64decode(string.encode("ascii")).decode("ascii")
+    except (base64.binascii.Error, UnicodeDecodeError):
+        return ""
+    
+def generateUUID(version):
+    version = str(version)
+    version = version[-1:]
+
+    if version == "1":
+        return uuid.uuid1()
+    elif version == "4":
+        return uuid.uuid4()
+    else:
+        return "hm? invalid version..."
+
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+
+        self.title("Programmer's Swiss Army Knife")
+        self.geometry("600x400")
+        self.resizable(False, False)
+        self.wm_iconbitmap("logo.ico")
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.options_frame = ctk.CTkScrollableFrame(self, width=200, height=300)
+        self.options_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ns")
+
+        self.widget_frame = ctk.CTkFrame(self, width=300, height=300)
+        self.widget_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
+
+        self.widget_frame.grid_columnconfigure(0, weight=1)
+        self.widget_frame.grid_rowconfigure(0)
+
+        self.widget_frame.grid_propagate(False)
+
+        # wowowoow options
+        self.options = optionsList
+        for option in self.options:
+            button = ctk.CTkButton(self.options_frame, text=option, command=lambda opt=option: self.show_widget(opt))
+            button.pack(pady=5, padx=5, fill="x")
+
+        self.input_textbox = None
+        self.output_textbox = None
+        self.choicebox = None
+
+    def show_widget(self, option):
+        global optionChosen
+
+        # reset the widget before doin anything
+        for widget in self.widget_frame.winfo_children():
+            widget.destroy()
+
+        if option == optionsList[0]:
+            optionChosen = 0
+
+            # just the title lool also cant be bothered with THIS \/ yep im pointing at text
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            #fancy line
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=1, column=0)
+
+            #start content
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=2, column=0, pady=(20, 5))
+
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=3, column=0, padx=10, pady=5)
+            self.input_textbox.bind("<KeyRelease>", self.update_output)
+
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can can enter b64 here too! :0):")
+            output_label.grid(row=4, column=0, pady=5)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.output_textbox.grid(row=5, column=0, padx=10, pady=5)
+            self.output_textbox.bind("<KeyRelease>", self.update_input)
+
+            upload_button = ctk.CTkButton(self.widget_frame, text="Convert File to b64", command=self.upload_file)
+            upload_button.grid(row=6, column=0, pady=(10, 20))
+    
+        if option == optionsList[1]:
+            optionChosen = 1
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=1, column=0)
+
+            #start content
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=2, column=0, pady=(20, 5))
+
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=3, column=0, padx=10, pady=5)
+            self.input_textbox.bind("<KeyRelease>", self.update_output)
+
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can enter Hex here):")
+            output_label.grid(row=4, column=0, pady=5)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.output_textbox.grid(row=5, column=0, padx=10, pady=5)
+            self.output_textbox.bind("<KeyRelease>", self.update_input)
+
+        if option == optionsList[2]:
+            optionChosen = 2
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=1, column=0)
+
+            #start content
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=2, column=0, pady=(20, 5))
+
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=3, column=0, padx=10, pady=5)
+            self.input_textbox.bind("<KeyRelease>", self.update_output)
+
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can enter Binary here):")
+            output_label.grid(row=4, column=0, pady=5)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.output_textbox.grid(row=5, column=0, padx=10, pady=5)
+            self.output_textbox.bind("<KeyRelease>", self.update_input)
+
+        if option == optionsList[3]:
+            optionChosen = 3
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            another_label = ctk.CTkLabel(self.widget_frame, text="dunno why you'd want to use it but sure", font=("Arial", 14))
+            another_label.grid(row=2, column=0)
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=3, column=0)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250,state="readonly")
+            self.output_textbox.grid(row=4, column=0, padx=10, pady=(20, 5))
+
+            UUIDver = ctk.StringVar(value="Version 1")
+
+            self.choicebox = ctk.CTkComboBox(self.widget_frame,
+                                                values=["Version 1", "Version 4"],
+                                                variable=UUIDver)
+            self.choicebox.grid(row=5, column=0, padx=20, pady=10)
+            self.choicebox.set("Version 1")  # set initial value
+
+            generate_button = ctk.CTkButton(self.widget_frame, text="Generate", command=self.UUID_update)
+            generate_button.grid(row=6, column=0, pady=(10, 20))
+
+    def UUID_update(self):
+       uuidgen = generateUUID(self.choicebox.get())
+       self.output_textbox.configure(state="normal")
+       self.output_textbox.delete(0, ctk.END) 
+       self.output_textbox.insert(0, uuidgen)
+       self.output_textbox.configure(state="readonly")
+
+    def update_output(self, event=None): #this is really inefficient TODO: fix pls :(
+        if self.input_textbox:
+            input_text = self.input_textbox.get()
+            if input_text.strip():
+                    if optionChosen == 0:
+                        self.output_textbox.delete(0, ctk.END)
+                        self.output_textbox.insert(0, b64encode(input_text))
+                    if optionChosen == 1:
+                        self.output_textbox.delete(0, ctk.END)
+                        self.output_textbox.insert(0, input_text.encode('utf-8').hex())
+                    if optionChosen == 2:
+                        self.output_textbox.delete(0, ctk.END)
+                        self.output_textbox.insert(0, ' '.join(format(ord(char), '08b') for char in input_text))
+
+    def update_input(self, event=None):
+        if self.output_textbox:
+            output_text = self.output_textbox.get()
+            self.input_textbox.delete(0, ctk.END)
+            if optionChosen == 0:
+                decoded_text = b64decode(output_text)
+                if decoded_text:
+                    self.input_textbox.insert(0, decoded_text)
+            if optionChosen == 1:
+                try:
+                    decoded_text = bytes.fromhex(output_text).decode('utf-8')
+                    if decoded_text:
+                        self.input_textbox.insert(0, decoded_text)
+                except:
+                    self.input_textbox.insert(0, "[Not valid Hex]")
+            if optionChosen == 2:
+                # look at this function isnt it beautiful 
+                UNICODE_MAX = 0x10FFFF
+
+                try:
+                    decoded_text = ''.join(
+                        chr(int(b, 2)) if len(b) == 8 and int(b, 2) <= UNICODE_MAX else f"[Not valid Binary]"
+                        for b in output_text.split()  # split when space
+                    )
+                    self.input_textbox.insert(0, decoded_text)
+                except ValueError:
+                    self.input_textbox.insert(0, "[Not valid Binary]")
+
+
+
+    def upload_file(self):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            try:
+                with open(file_path, "rb") as file:
+                    content = file.read()
+                    encoded_content = base64.b64encode(content).decode("ascii")
+                    self.input_textbox.delete(0, ctk.END)
+                    self.input_textbox.insert(0, "[Encoded your file :o (Check below)]")
+                    self.output_textbox.delete(0, ctk.END)
+                    self.output_textbox.insert(0, encoded_content)
+            except Exception as e:
+                print(f"Error reading file: {e}")
+
+if __name__ == "__main__":
+    app = App()
+    app.mainloop()
