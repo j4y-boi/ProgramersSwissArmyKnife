@@ -2,12 +2,12 @@
 Or PSAK for short, is a small program in Python which offers some tools handy for developers!
 
 ## Currently Implemented
-- Base64, Hex, Binary en/decoding
+- Base64, Hex, Binary, URL en/decoding
 - UUID Generation (Version 1 and 4)
+- Hash Generation (AES-256 and MD5)
+
 ### To be added:
-- Hash generation maybe
 - a pixel circle generator (i dunno gimme ideas)
-- URL encoding/decoding
 
 ## Compiling it yourself
 Sure, here uh- are some instructions...
