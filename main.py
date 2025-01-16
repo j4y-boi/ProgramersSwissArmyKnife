@@ -4,13 +4,18 @@
 
 import customtkinter as ctk
 from tkinter import filedialog
-import base64
-import uuid
+import base64, uuid, hashlib, qrcode
+import urllib.parse
+from io import BytesIO
+from PIL import Image
+import sys
 
 ctk.set_appearance_mode("System")  # incase someone uses light mode (waht is wrong with u)
 ctk.set_default_color_theme("blue")
 
-optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID"] #guess whos too lazy to edit multiple things (couldnt be me :P)
+exeLocal = sys._MEIPASS #almost forgot this for the exe
+
+optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID","URL Encode/Decode","Hashes","QR Code"] #guess whos too lazy to edit multiple things (couldnt be me :P)
 optionChosen = 0
 
 def b64encode(string: str):
@@ -39,8 +44,8 @@ class App(ctk.CTk):
 
         self.title("Programmer's Swiss Army Knife")
         self.geometry("600x400")
-        self.resizable(False, False)
-        self.wm_iconbitmap("logo.ico")
+        self.resizable(False,False)
+        self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -65,6 +70,7 @@ class App(ctk.CTk):
         self.input_textbox = None
         self.output_textbox = None
         self.choicebox = None
+        self.image = None
 
     def show_widget(self, option):
         global optionChosen
@@ -159,6 +165,8 @@ class App(ctk.CTk):
             another_label.grid(row=2, column=0)
             underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
             underline_canvas.grid(row=3, column=0)
+            
+            # content starts (lets switch it up a bit)
 
             self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250,state="readonly")
             self.output_textbox.grid(row=4, column=0, padx=10, pady=(20, 5))
@@ -174,6 +182,85 @@ class App(ctk.CTk):
             generate_button = ctk.CTkButton(self.widget_frame, text="Generate", command=self.UUID_update)
             generate_button.grid(row=6, column=0, pady=(10, 20))
 
+        if option == optionsList[4]:
+            optionChosen = 4
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=1, column=0)
+
+            #start content (nah nvm)
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=2, column=0, pady=(20, 5))
+
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=3, column=0, padx=10, pady=5)
+            self.input_textbox.bind("<KeyRelease>", self.update_output)
+
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can paste a encode URL here):")
+            output_label.grid(row=4, column=0, pady=5)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.output_textbox.grid(row=5, column=0, padx=10, pady=5)
+            self.output_textbox.bind("<KeyRelease>", self.update_input)
+
+        if option == optionsList[5]:
+            optionChosen = 5
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            another_label = ctk.CTkLabel(self.widget_frame, text="MD5, SHA-256, those things", font=("Arial", 14))
+            another_label.grid(row=1, column=0)
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=2, column=0)
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=3, column=0, pady=(20, 5))
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=4, column=0, padx=10,)
+
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output:")
+            output_label.grid(row=6, column=0)
+
+            #yeah i copy pasted this from the uuid generation, did i regret it? no.
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250,state="readonly")
+            self.output_textbox.grid(row=7, column=0, padx=10)
+
+            hashType = ctk.StringVar(value="MD5")
+
+            self.choicebox = ctk.CTkComboBox(self.widget_frame,
+                                                values=["MD5", "SHA-256"],
+                                                variable=hashType)
+            self.choicebox.grid(row=8, column=0, padx=20, pady=10)
+            self.choicebox.set("MD5")  # set initial value
+
+            generate_button = ctk.CTkButton(self.widget_frame, text="Generate", command=self.Hash_generate)
+            generate_button.grid(row=9, column=0, pady=(10, 20))
+
+            generate_button2 = ctk.CTkButton(self.widget_frame, text="Hash File", command=self.upload_file)
+            generate_button2.grid(row=10, column=0)
+
+        if option == optionsList[6]:
+            optionChosen = 6
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=2, column=0)
+
+            input_label = ctk.CTkLabel(self.widget_frame, text="Input:")
+            input_label.grid(row=3, column=0, pady=5)
+            self.input_textbox = ctk.CTkEntry(self.widget_frame, width=250)
+            self.input_textbox.grid(row=4, column=0, padx=10,)
+            self.input_textbox.bind("<KeyRelease>", self.update_output)
+
+            self.image = ctk.CTkLabel(self.widget_frame, text="Your QR Code will come here!")
+            self.image.grid(row=5,column=0, pady=20)
+
+
+
     def UUID_update(self):
        uuidgen = generateUUID(self.choicebox.get())
        self.output_textbox.configure(state="normal")
@@ -181,7 +268,22 @@ class App(ctk.CTk):
        self.output_textbox.insert(0, uuidgen)
        self.output_textbox.configure(state="readonly")
 
-    def update_output(self, event=None): #this is really inefficient TODO: fix pls :(
+    def Hash_generate(self):
+        if self.choicebox.get() == "SHA-256":
+            sha256_hash = hashlib.sha256()
+            sha256_hash.update(self.input_textbox.get().encode('utf-8'))
+            hash_hex = sha256_hash.hexdigest()
+        elif self.choicebox.get() == "MD5":
+            md5_hash = hashlib.md5()
+            md5_hash.update(self.input_textbox.get().encode('utf-8'))
+            hash_hex = md5_hash.hexdigest()
+
+        self.output_textbox.configure(state="normal")
+        self.output_textbox.delete(0, ctk.END) 
+        self.output_textbox.insert(0, hash_hex)
+        self.output_textbox.configure(state="readonly")
+
+    def update_output(self, event=None): #this is really inefficient TODO: fix pls :( 
         if self.input_textbox:
             input_text = self.input_textbox.get()
             if input_text.strip():
@@ -194,6 +296,31 @@ class App(ctk.CTk):
                     if optionChosen == 2:
                         self.output_textbox.delete(0, ctk.END)
                         self.output_textbox.insert(0, ' '.join(format(ord(char), '08b') for char in input_text))
+                    if optionChosen == 4:
+                        self.output_textbox.delete(0, ctk.END)
+                        self.output_textbox.insert(0,urllib.parse.quote(input_text))
+                    if optionChosen == 6:
+                        if not input_text:
+                            return  # pls type something
+                    
+                        if len(input_text) >= 7000:
+                            self.image.configure(text="Too long!", image="")
+                            return
+                        
+                        # make qr code
+                        qr = qrcode.QRCode(box_size=10, border=2)
+                        qr.add_data(input_text)
+                        qr.make(fit=True)
+
+                        # make image
+                        img = qr.make_image(fill="black", back_color="white")
+                        bio = BytesIO()
+                        img.save(bio, format="PNG")
+                        bio.seek(0)
+                        qr_img = Image.open(bio)
+                        qr_tk = ctk.CTkImage(qr_img, size=[200,200])
+
+                        self.image.configure(image=qr_tk, text="")
 
     def update_input(self, event=None):
         if self.output_textbox:
@@ -222,22 +349,51 @@ class App(ctk.CTk):
                     self.input_textbox.insert(0, decoded_text)
                 except ValueError:
                     self.input_textbox.insert(0, "[Not valid Binary]")
+            if optionChosen == 4:
+                try:
+                    self.input_textbox.insert(0, urllib.parse.unquote(output_text))
+                except ValueError:
+                    self.input_textbox.insert(0, "[Not valid URL]")
 
 
 
     def upload_file(self):
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            try:
-                with open(file_path, "rb") as file:
-                    content = file.read()
-                    encoded_content = base64.b64encode(content).decode("ascii")
-                    self.input_textbox.delete(0, ctk.END)
-                    self.input_textbox.insert(0, "[Encoded your file :o (Check below)]")
-                    self.output_textbox.delete(0, ctk.END)
-                    self.output_textbox.insert(0, encoded_content)
-            except Exception as e:
-                print(f"Error reading file: {e}")
+        if optionChosen == 0:
+            file_path = filedialog.askopenfilename()
+            if file_path:
+                try:
+                    with open(file_path, "rb") as file:
+                        content = file.read()
+                        encoded_content = base64.b64encode(content).decode("ascii")
+                        self.input_textbox.delete(0, ctk.END)
+                        self.input_textbox.insert(0, "[Encoded your file :o (Check below)]")
+                        self.output_textbox.delete(0, ctk.END)
+                        self.output_textbox.insert(0, encoded_content)
+                except Exception as e:
+                    print(f"Error reading file: {e}")
+        if optionChosen == 5:
+            file_path = filedialog.askopenfilename()
+            if file_path:
+                try:
+                    with open(file_path, "rb") as file:
+                        content = file.read()
+                        self.input_textbox.delete(0, ctk.END)
+                        self.input_textbox.insert(0, "[hashed your file :o (Check below)]")
+
+
+                        if self.choicebox.get() == "SHA-256":
+                            digest = hashlib.file_digest(file, "sha256")
+                            hash_hex = digest.hexdigest()  
+                        elif self.choicebox.get() == "MD5":
+                            digest = hashlib.file_digest(file, "md5")
+                            hash_hex = digest.hexdigest()  
+
+                        self.output_textbox.configure(state="normal")
+                        self.output_textbox.delete(0, ctk.END) 
+                        self.output_textbox.insert(0, hash_hex)
+                        self.output_textbox.configure(state="readonly")
+                except Exception as e:
+                    print(f"Error reading file: {e}")
 
 if __name__ == "__main__":
     app = App()
