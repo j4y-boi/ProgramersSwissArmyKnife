@@ -26,3 +26,4 @@ Sure, here uh- are some instructions...
 ## Screenshots
 ![Screenshot1](https://raw.githubusercontent.com/j4y-boi/ProgramersSwissArmyKnife/refs/heads/main/screenshots/screenshot1.png)
 ![Screenshot2](https://raw.githubusercontent.com/j4y-boi/ProgramersSwissArmyKnife/refs/heads/main/screenshots/screenshot2.png)
+![Screenshot3](https://raw.githubusercontent.com/j4y-boi/ProgramersSwissArmyKnife/refs/heads/main/screenshots/screenshot3.png)
