@@ -44,8 +44,8 @@ class App(ctk.CTk):
         self.geometry("800x450")
         self.resizable(False,False)
 
-        #exeLocal = sys._MEIPASS #almost forgot this for the exe
-        #self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
+        exeLocal = sys._MEIPASS #almost forgot this for the exe
+        self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
 
         self.grid_columnconfigure(0)
         self.grid_rowconfigure(0, weight=1)
