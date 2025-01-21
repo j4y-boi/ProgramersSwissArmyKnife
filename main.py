@@ -3,17 +3,15 @@
 # https://github.com/j4y-boi
 
 import customtkinter as ctk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 import base64, uuid, hashlib, qrcode
 import urllib.parse
 from io import BytesIO
 from PIL import Image
 import sys
 
-ctk.set_appearance_mode("System")  # incase someone uses light mode (waht is wrong with u)
+ctk.set_appearance_mode("system")  # incase someone uses light mode (waht is wrong with u)
 ctk.set_default_color_theme("blue")
-
-exeLocal = sys._MEIPASS #almost forgot this for the exe
 
 optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID","URL Encode/Decode","Hashes","QR Code"] #guess whos too lazy to edit multiple things (couldnt be me :P)
 optionChosen = 0
@@ -43,17 +41,19 @@ class App(ctk.CTk):
         super().__init__()
 
         self.title("Programmer's Swiss Army Knife")
-        self.geometry("600x400")
+        self.geometry("800x450")
         self.resizable(False,False)
-        self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
 
-        self.grid_columnconfigure(0, weight=1)
+        #exeLocal = sys._MEIPASS #almost forgot this for the exe
+        #self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
+
+        self.grid_columnconfigure(0)
         self.grid_rowconfigure(0, weight=1)
 
         self.options_frame = ctk.CTkScrollableFrame(self, width=200, height=300)
         self.options_frame.grid(row=0, column=0, padx=10, pady=10, sticky="ns")
 
-        self.widget_frame = ctk.CTkFrame(self, width=300, height=300)
+        self.widget_frame = ctk.CTkFrame(self, width=525, height=300)
         self.widget_frame.grid(row=0, column=1, padx=10, pady=10, sticky="nsew")
 
         self.widget_frame.grid_columnconfigure(0, weight=1)
@@ -163,7 +163,7 @@ class App(ctk.CTk):
             title_label.grid(row=0, column=0, pady=(20, 5))
             another_label = ctk.CTkLabel(self.widget_frame, text="dunno why you'd want to use it but sure", font=("Arial", 14))
             another_label.grid(row=2, column=0)
-            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, width=300, bg="white", bd=0, highlightthickness=0)
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, bg="white", bd=0, highlightthickness=0)
             underline_canvas.grid(row=3, column=0)
             
             # content starts (lets switch it up a bit)
@@ -175,7 +175,8 @@ class App(ctk.CTk):
 
             self.choicebox = ctk.CTkComboBox(self.widget_frame,
                                                 values=["Version 1", "Version 4"],
-                                                variable=UUIDver)
+                                                variable=UUIDver,
+                                                state="readonly")
             self.choicebox.grid(row=5, column=0, padx=20, pady=10)
             self.choicebox.set("Version 1")  # set initial value
 
@@ -199,7 +200,7 @@ class App(ctk.CTk):
             self.input_textbox.grid(row=3, column=0, padx=10, pady=5)
             self.input_textbox.bind("<KeyRelease>", self.update_output)
 
-            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can paste a encode URL here):")
+            output_label = ctk.CTkLabel(self.widget_frame, text="Output (You can paste an encode URL here):")
             output_label.grid(row=4, column=0, pady=5)
 
             self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250)
@@ -232,7 +233,8 @@ class App(ctk.CTk):
 
             self.choicebox = ctk.CTkComboBox(self.widget_frame,
                                                 values=["MD5", "SHA-256"],
-                                                variable=hashType)
+                                                variable=hashType,
+                                                state="readonly")
             self.choicebox.grid(row=8, column=0, padx=20, pady=10)
             self.choicebox.set("MD5")  # set initial value
 
@@ -261,6 +263,22 @@ class App(ctk.CTk):
 
 
 
+
+    def save_QR(self):
+        file_path = filedialog.asksaveasfilename(
+            initialfile='qr_code.png',
+            defaultextension=".png",
+            filetypes=[("PNG Images", "*.png"), ("All Files", "*.*")]
+        )
+
+        if file_path:  # Check if the user selected a file
+            try:
+                qr_gen.save(file_path, format="PNG")
+                messagebox.showinfo("Success", f"Successfully saved your QR code!")
+            except Exception as e:
+                messagebox.showerror("Error", f"An error occurred while trying to save your QR Code! {e}")
+
+
     def UUID_update(self):
        uuidgen = generateUUID(self.choicebox.get())
        self.output_textbox.configure(state="normal")
@@ -277,6 +295,8 @@ class App(ctk.CTk):
             md5_hash = hashlib.md5()
             md5_hash.update(self.input_textbox.get().encode('utf-8'))
             hash_hex = md5_hash.hexdigest()
+        else:
+            hash_hex = "[Invalid Hash Algorithm]"
 
         self.output_textbox.configure(state="normal")
         self.output_textbox.delete(0, ctk.END) 
@@ -318,9 +338,14 @@ class App(ctk.CTk):
                         img.save(bio, format="PNG")
                         bio.seek(0)
                         qr_img = Image.open(bio)
+                        global qr_gen 
+                        qr_gen = qr_img
                         qr_tk = ctk.CTkImage(qr_img, size=[200,200])
 
                         self.image.configure(image=qr_tk, text="")
+                      
+                        self.generate_button = ctk.CTkButton(self.widget_frame, text="Save QR Code", command=self.save_QR)
+                        self.generate_button.grid(row=6, column=0, pady=(10, 20))
 
     def update_input(self, event=None):
         if self.output_textbox:
@@ -387,6 +412,8 @@ class App(ctk.CTk):
                         elif self.choicebox.get() == "MD5":
                             digest = hashlib.file_digest(file, "md5")
                             hash_hex = digest.hexdigest()  
+                        else:
+                            hash_hex = "[Invalid Hash Algorithm]"
 
                         self.output_textbox.configure(state="normal")
                         self.output_textbox.delete(0, ctk.END) 
