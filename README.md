@@ -5,6 +5,7 @@ Or PSAK for short, is a small program in Python which offers some tools handy fo
 - Base64, Hex, Binary, URL en/decoding
 - UUID Generation (Version 1 and 4)
 - Hash Generation (AES-256 and MD5)
+- Random String Generation
 
 ### To be added:
 - a pixel circle generator (i dunno gimme ideas)
