@@ -9,11 +9,12 @@ import urllib.parse
 from io import BytesIO
 from PIL import Image
 import sys
+import string, random
 
 ctk.set_appearance_mode("system")  # incase someone uses light mode (waht is wrong with u)
 ctk.set_default_color_theme("blue")
 
-optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID","URL Encode/Decode","Hashes","QR Code"] #guess whos too lazy to edit multiple things (couldnt be me :P)
+optionsList = ["Base64 Encode/Decode","Hex Encode/Decode","Binary","UUID","URL Encode/Decode","Hashes","QR Code","Random String Generator"] #guess whos too lazy to edit multiple things (couldnt be me :P)
 optionChosen = 0
 
 def b64encode(string: str):
@@ -44,8 +45,11 @@ class App(ctk.CTk):
         self.geometry("800x450")
         self.resizable(False,False)
 
-        exeLocal = sys._MEIPASS #almost forgot this for the exe
-        self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
+        try: #finally came around fixing this annoying problem
+            exeLocal = sys._MEIPASS #almost forgot this for the exe
+            self.wm_iconbitmap(fr"{exeLocal}/logo.ico")
+        except:
+            print("yeah no, this isn't an exe hmmmm")
 
         self.grid_columnconfigure(0)
         self.grid_rowconfigure(0, weight=1)
@@ -260,9 +264,33 @@ class App(ctk.CTk):
 
             self.image = ctk.CTkLabel(self.widget_frame, text="Your QR Code will come here!")
             self.image.grid(row=5,column=0, pady=20)
+        
+        if option == optionsList[7]:
+            optionChosen = 7
+
+            title_label = ctk.CTkLabel(self.widget_frame, text=optionsList[optionChosen], font=("Arial", 24, "bold"))
+            title_label.grid(row=0, column=0, pady=(20, 5))
+            another_label = ctk.CTkLabel(self.widget_frame, text="20 characters of randomness", font=("Arial", 14))
+            another_label.grid(row=2, column=0)
+            underline_canvas = ctk.CTkCanvas(self.widget_frame, height=2, bg="white", bd=0, highlightthickness=0)
+            underline_canvas.grid(row=3, column=0)
+            
+            # content starts (lets switch it up a bit)
+
+            self.output_textbox = ctk.CTkEntry(self.widget_frame, width=250,state="readonly")
+            self.output_textbox.grid(row=4, column=0, padx=10, pady=(20, 5))
+
+            generate_button = ctk.CTkButton(self.widget_frame, text="Generate", command=self.generateRandom)
+            generate_button.grid(row=6, column=0, pady=(10, 20))
 
 
-
+    def generateRandom(self):
+        res = ''.join(random.choices(string.ascii_uppercase +string.ascii_lowercase +string.digits,k=20))
+        
+        self.output_textbox.configure(state="normal")
+        self.output_textbox.delete(0, ctk.END) 
+        self.output_textbox.insert(0, res)
+        self.output_textbox.configure(state="readonly")
 
     def save_QR(self):
         file_path = filedialog.asksaveasfilename(
