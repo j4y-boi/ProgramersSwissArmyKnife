@@ -18,7 +18,8 @@ Sure, here uh- are some instructions...
   pip install -r requirements.txt
   ```
 - Install [pyinstaller](https://pypi.org/project/pyinstaller/) or [auto-py-to-exe](https://pypi.org/project/auto-py-to-exe/)
-- Compile it to an exe, include logo.ico for the app icon. (you can change it :o)
+- Compile it to an exe, include logo.ico for the app icon. (you can change it :o)  
+**(You can also just run main.py)**
 
 ## Credits
 - j4y_boi
