@@ -1,5 +1,6 @@
 # Programmer's Swiss Army Knife
-Or PSAK for short, is a small program in Python which offers some tools handy for developers!
+![releases](https://img.shields.io/github/v/release/j4y-boi/ProgramersSwissArmyKnife)  
+Or PSAK for short, is a small program in Python which offers some tools handy for developers!  
 
 ## Currently Implemented
 - Base64, Hex, Binary, URL en/decoding
